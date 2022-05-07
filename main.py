@@ -1,50 +1,63 @@
+from tool.db import db
+from tool.ZhDate import ZhDate
+from datetime import datetime
+from tool.al_mail import al_mail
 import config
-from al_mail import al_mail
-import csv
-import datetime
 
+# 连接数据库
+users_data = db(config.db_url)
 
+# 今天的时间
+luner_date = ZhDate.today()
+solar_date = datetime.now()
+# 时间转为字符
+luner_str = luner_date.chinese()[5: 9]
+solar_str = solar_date.strftime('%b')+' '+solar_date.strftime('%d')
+# 对应的月，日
+l_mon = luner_date.lunar_month
+l_day = luner_date.lunar_day
+s_mon = solar_date.month
+s_day = solar_date.day
 
-# 当前日期
-now_day = datetime.datetime.now()
-# 发送信息列表
-birthday_data = []
-# 将邮箱设置与阿里密钥合并成新字典
+# 构造查找表
+luner_query = {"lunar_cal": l_mon*100+l_day, "receive_lunar": True}
+solar_query = {"solar_cal": s_mon*100+s_day, "receive_solar": True}
+
+send_list_luner = users_data.col_find(
+    luner_query, {"_id": 1, "name": 1, "mail": 1})
+send_list_solar = users_data.col_find(
+    solar_query, {"_id": 1, "name": 1, "mail": 1})
+
+# 阿里云邮件推送
 al_config = dict(config.mail_config, **config.al_secret)
+al_mail = al_mail(al_config)
 
-# 找出今天过生日的人
-with open(config.data_file, "r", encoding='utf-8-sig') as data_csv:
-    reader = csv.DictReader(data_csv)
-    for row in reader:
-        birthday = datetime.datetime.strptime(row['birthday'], '%Y/%m/%d')
-        if (now_day.month == birthday.month) & (now_day.day == birthday.day):
-            birthday_data.append(row)
+# 农历生日发送
+with open(config.lunar_mo, "r", encoding="utf-8") as html_txt:
+    html_data = html_txt.read()
+    for user in send_list_luner:
+        print(user["name"])
+        mail_body = html_data.replace("{{name}}", user['name'])
+        mail_body = mail_body.replace("{{date}}", luner_str)
+        mail_body = mail_body.replace(
+            "{{url}}", config.user_url+str(user['_id']))
+        al_mail.send(user["mail"], "Happy Birthday", mail_body)
 
-
-
-
-
-if birthday_data:
-    # 将日期转为英文
-    def time_to_en(daytime):
-        month_num = daytime.month-1
-        month_list = ['Jan', 'Feb', 'Mar', 'Apr', 'May',
-                        'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        return (month_list[month_num]+' '+('%02d' % daytime.day))
-
-    # 创建一个
-    al_mail = al_mail(al_config)
-
-    with open(config.html_file, "r", encoding="utf-8") as html_txt:
-        html_data = html_txt.read()
-        for someone in birthday_data:
-            mail_body = html_data.replace("{{name}}", someone['name'])
-            mail_body = mail_body.replace("{{date}}", time_to_en(now_day))
-            # al_mail.send(someone["mail"], "Happy Birthday", mail_body)
-
-else:
-    print("今天没有人过生日")
+html_txt.close()
 
 
+# 阳历生日发送
+with open(config.solar_mo, "r", encoding="utf-8") as html_txt:
+    html_data = html_txt.read()
+    for user in send_list_solar:
+        print(user["name"])
+        mail_body = html_data.replace("{{name}}", user['name'])
+        mail_body = mail_body.replace("{{date}}", solar_str)
+        mail_body = mail_body.replace(
+            "{{url}}", config.user_url+str(user['_id']))
+        al_mail.send(user["mail"], "Happy Birthday", mail_body)
+
+html_txt.close()
 
 
+users_data.__del__()
