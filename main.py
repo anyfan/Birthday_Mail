@@ -1,6 +1,6 @@
 from tool.db import db
 from tool.ZhDate import ZhDate
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from tool.al_mail import al_mail
 import requests
 import config
@@ -9,8 +9,13 @@ import config
 users_data = db(config.db_url)
 
 # 今天的时间
+SHA_TZ = timezone(
+    timedelta(hours=8),
+    name='Asia/Shanghai',
+)
+utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
+solar_date = utc_now.astimezone(SHA_TZ)
 luner_date = ZhDate.today()
-solar_date = datetime.now()
 # 时间转为字符
 luner_str = luner_date.chinese()[5: 9]
 solar_str = solar_date.strftime('%b')+' '+solar_date.strftime('%d')
@@ -81,4 +86,4 @@ def send2bark(key, title, content):
     return
 
 
-send2bark(config.bark_key, 'gh_birthmail', str(bark_msg))
+send2bark(config.bark_key, 'gh_birthMail', str(bark_msg))

@@ -5,7 +5,7 @@ File Created: Sunday, 17th February 2019 4:58:02 pm
 Author: Wang, Yi (denniswangyi@gmail.com)
 '''
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from itertools import accumulate
 
 '''
@@ -163,7 +163,12 @@ class ZhDate():
 
     @staticmethod
     def today():
-        return ZhDate.from_datetime(datetime.now())
+        SHA_TZ = timezone(
+            timedelta(hours=8),
+            name='Asia/Shanghai',
+        )
+        utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
+        return ZhDate.from_datetime(utc_now.astimezone(SHA_TZ))
 
     def __days_passed(self):
         """私有方法，计算当前农历日期和当年农历新年之间的天数差值
