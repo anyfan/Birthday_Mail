@@ -5,7 +5,7 @@ name: SendBirthMail
 
 on:
   schedule:
-    - cron: "0 0 20 * * *"
+    - cron: "0 20 * * *"
 
 permissions:
   contents: read
@@ -36,8 +36,8 @@ jobs:
       run: |
         python ./main.py
       env:
-        mongodb_url: ${{ secrets.STUID }}
-        bark_key: ${{ secrets.PW }}
-        al_accessid: ${{ secrets.SERVER }}
-        al_AccesskeySecret: ${{ secrets.SCKEY }}
+        mongodb_url: ${{ secrets.mongodb_url }}
+        bark_key: ${{ secrets.bark_key }}
+        al_accessid: ${{ secrets.al_accessid }}
+        al_AccesskeySecret: ${{ secrets.al_AccesskeySecret }}
 
