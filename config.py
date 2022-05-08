@@ -7,6 +7,8 @@ user_url = "https://docs.anyfan.top/#/unsubscribe?user="
 
 db_url = os.environ['mongodb_url']
 
+bark_key = os.environ['bark_key']
+
 mail_config = {
     "sendname": "小东西",
     "sendadress": "site@msg.anyfan.top"

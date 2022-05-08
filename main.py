@@ -2,6 +2,7 @@ from tool.db import db
 from tool.ZhDate import ZhDate
 from datetime import datetime
 from tool.al_mail import al_mail
+import requests
 import config
 
 # 连接数据库
@@ -32,16 +33,19 @@ send_list_solar = users_data.col_find(
 al_config = dict(config.mail_config, **config.al_secret)
 al_mail = al_mail(al_config)
 
+bark_msg = []
+
 # 农历生日发送
 with open(config.lunar_mo, "r", encoding="utf-8") as html_txt:
     html_data = html_txt.read()
     for user in send_list_luner:
-        print(user["name"])
+        print('luner'+user["name"])
+        bark_msg.append(user)
         mail_body = html_data.replace("{{name}}", user['name'])
         mail_body = mail_body.replace("{{date}}", luner_str)
         mail_body = mail_body.replace(
             "{{url}}", config.user_url+str(user['_id']))
-        al_mail.send(user["mail"], "Happy Birthday", mail_body)
+        al_mail.send(user["mail"], "生日快乐", mail_body)
 
 html_txt.close()
 
@@ -50,7 +54,8 @@ html_txt.close()
 with open(config.solar_mo, "r", encoding="utf-8") as html_txt:
     html_data = html_txt.read()
     for user in send_list_solar:
-        print(user["name"])
+        print('solar'+user["name"])
+        bark_msg.append(user)
         mail_body = html_data.replace("{{name}}", user['name'])
         mail_body = mail_body.replace("{{date}}", solar_str)
         mail_body = mail_body.replace(
@@ -59,5 +64,21 @@ with open(config.solar_mo, "r", encoding="utf-8") as html_txt:
 
 html_txt.close()
 
-
 users_data.__del__()
+
+# 消息推送
+
+
+def send2bark(key, title, content):
+    bark_api = "https://api.day.app"
+    try:
+        msg = "{0}/{1}/{2}/{3}?isArchive=1".format(
+            bark_api, key, title, content)
+        res = requests.get(msg, verify=False)
+    except Exception as e:
+        print('bark_err:', e)
+        return
+    return
+
+
+send2bark(config.bark_key, 'gh_birthmail', str(bark_msg))
