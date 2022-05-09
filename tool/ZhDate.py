@@ -168,7 +168,8 @@ class ZhDate():
             name='Asia/Shanghai',
         )
         utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
-        return ZhDate.from_datetime(utc_now.astimezone(SHA_TZ))
+        Shanghai_now = utc_now.astimezone(SHA_TZ)
+        return ZhDate.from_datetime(datetime(Shanghai_now.year, Shanghai_now.month, Shanghai_now.day))
 
     def __days_passed(self):
         """私有方法，计算当前农历日期和当年农历新年之间的天数差值

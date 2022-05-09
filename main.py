@@ -79,6 +79,7 @@ def send2bark(key, title, content):
     try:
         msg = "{0}/{1}/{2}/{3}?isArchive=1".format(
             bark_api, key, title, content)
+        requests.packages.urllib3.disable_warnings()
         res = requests.get(msg, verify=False)
     except Exception as e:
         print('bark_err:', e)
