@@ -22,7 +22,7 @@
 
 隐私配置在脚本仓库的`Repository secrets`中，其中
 
-| 设置的 secret 配置     | 说明                            |
+| 设置的 secret          | 说明                            |
 | ---------------------- | ------------------------------- |
 | **AL_ACCESSID**        | 阿里云`AccessKey ID`            |
 | **AL_ACCESSKEYSECRET** | 阿里云`AccessKey Secret`        |
